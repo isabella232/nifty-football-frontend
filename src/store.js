@@ -126,7 +126,7 @@ export default new Vuex.Store({
                         dispatch('bootstrapWeb3');
 
                         // Reload the account logic if we see a change
-                        ethereum.on('accountsChanged', (accounts) => {
+                        ethereum.on && ethereum.on('accountsChanged', (accounts) => {
                             console.log('accountsChanged', accounts);
 
                             const account = accounts[0];
