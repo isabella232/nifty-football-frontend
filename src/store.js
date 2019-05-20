@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import {ethers} from 'ethers';
+import Web3 from 'web3';
 // import createLogger from 'vuex/dist/logger';
 
 import CardsApiService from './services/api/cardsApi.service';
@@ -17,8 +18,6 @@ import {contracts} from 'nifty-football-contract-tools';
 import {dotDotDotAccount} from './utils';
 
 Vue.use(Vuex);
-
-/* global web3 */
 
 export default new Vuex.Store({
     // plugins: debug ? [createLogger()] : [],
@@ -65,11 +64,14 @@ export default new Vuex.Store({
         etherscanUrl(state, etherscanUrl) {
             state.etherscanUrl = etherscanUrl;
         },
+        web3(state, web3) {
+            state.web3 = web3;
+        },
         provider(state, provider) {
             console.log(`Setting provider for network [${state.networkId}]`, provider);
             state.provider = provider;
             state.providerSigner = provider.getSigner();
-            state.blindPackService = new BlindPackContractService(state.networkId, state.providerSigner);
+            state.blindPackService = new BlindPackContractService(state.networkId, state.web3, state.ethAccount);
             state.footballCardsContractService = new FootballCardsContractService(state.networkId, state.providerSigner);
 
             state.web3Enabled = true;
@@ -95,13 +97,15 @@ export default new Vuex.Store({
         },
         async lazyLoadWeb3({commit, dispatch, state}) {
             /* global ethereum */
-            /* global Web3 */
+            let web3
             if (typeof window.ethereum === 'undefined') {
                 console.log('Looks like you need a Dapp browser to get started.');
             }
             // enable ethereum
             else if (!state.ethAccount && window.ethereum) {
                 console.log('Enabled Web3');
+                web3 = new Web3(window.ethereum);
+                commit('web3', web3);
                 ethereum.enable()
                     .catch((reason) => {
                         console.error('Error - ethereum.enabled() rejected', reason);
@@ -134,7 +138,8 @@ export default new Vuex.Store({
             // Legacy dapp browsers...
             else if (!state.ethAccount && window.web3) {
                 console.log('Legacy');
-                window.web3 = new Web3(web3.currentProvider);
+                web3 = new Web3(window.web3.currentProvider);
+                commit('web3', web3)
 
                 console.log(`Account`, window.web3.eth.accounts[0]);
                 commit('ethAccount', window.web3.eth.accounts[0]);

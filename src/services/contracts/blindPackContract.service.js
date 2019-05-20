@@ -4,13 +4,13 @@ import {abi, contracts} from 'nifty-football-contract-tools';
 
 export default class BlindPackContractService {
 
-    constructor(networkId, providerSigner) {
+    constructor(networkId, web3, ethAccount) {
         this.networkId = networkId;
-        this.providerSigner = providerSigner;
+        this.ethAccount = ethAccount;
         const {address} = contracts.getNiftyFootballBlindPack(networkId);
         const {address: eliteAddress} = contracts.getNiftyFootballEliteBlindPack(networkId);
-        this.contract = new ethers.Contract(address, abi.NiftyFootballTradingCardBlindPackAbi, this.providerSigner);
-        this.eliteContract = new ethers.Contract(eliteAddress, abi.NiftyFootballTradingCardEliteBlindPackAbi, this.providerSigner);
+        this.contract = new web3.eth.Contract(abi.NiftyFootballTradingCardBlindPackAbi, address);
+        this.eliteContract = new web3.eth.Contract(abi.NiftyFootballTradingCardEliteBlindPackAbi, eliteAddress);
     }
 
     async buyBlindPack(number, useCredits = false) {
@@ -19,11 +19,11 @@ export default class BlindPackContractService {
 
         const gasPrice = await ethers.getDefaultProvider(this.getNetworkString(this.networkId)).getGasPrice();
 
-        const totalPrice = await this.contract.totalPrice(number);
+        const totalPrice = await this.contract.methods.totalPrice(number).call();
 
-        const gasLimit = await this.contract.estimate.buyBatch(number, {
-            value: totalPrice
-        });
+        // const gasLimit = await this.contract.estimate.buyBatch(number, {
+        //     value: totalPrice
+        // });
 
         // Supply zero value if using credits up
         const price = useCredits
@@ -31,35 +31,43 @@ export default class BlindPackContractService {
             : totalPrice;
 
         // wait for tx to be mined
-        return this.contract.buyBatch(number, {
-            // The maximum units of gas for the transaction to use
-            gasLimit: gasLimit.add(500000),
-            // The price (in wei) per unit of gas
-            gasPrice: gasPrice,
-            value: price,
-        });
-
+        return new Promise((resolve, reject) => {
+            this.contract.methods.buyBatch(number).send({
+                from: this.ethAccount,
+                // The maximum units of gas for the transaction to use
+                // gasLimit: gasLimit.add(500000),
+                // The price (in wei) per unit of gas
+                gasPrice: gasPrice,
+                value: price,
+            })
+            .once('confirmation', (undefined, receipt) => resolve(receipt))
+            .on('error', (e) => reject(e));
+        })
     }
 
     async buyEliteBlindPack(number) {
 
         const gasPrice = await ethers.getDefaultProvider(this.getNetworkString(this.networkId)).getGasPrice();
 
-        const totalPrice = await this.eliteContract.totalPrice(number);
+        const totalPrice = await this.eliteContract.methods.totalPrice(number).call();
 
-        const gasLimit = await this.eliteContract.estimate.buyBatch(number, {
-            value: totalPrice
-        });
+        // const gasLimit = await this.eliteContract.estimate.buyBatch(number, {
+        //     value: totalPrice
+        // });
 
         // wait for tx to be mined
-        return this.eliteContract.buyBatch(number, {
-            // The maximum units of gas for the transaction to use
-            gasLimit: gasLimit.add(500000),
-            // The price (in wei) per unit of gas
-            gasPrice: gasPrice,
-            value: totalPrice,
-        });
-
+        return new Promise((resolve, reject) => {
+            this.eliteContract.methods.buyBatch(number).send({
+                from: this.ethAccount,
+                // The maximum units of gas for the transaction to use
+                // gasLimit: gasLimit.add(500000),
+                // The price (in wei) per unit of gas
+                gasPrice: gasPrice,
+                value: totalPrice,
+            })
+            .once('confirmation', (undefined, receipt) => resolve(receipt))
+            .on('error', (e) => reject(e));
+        })
     }
 
 

@@ -194,19 +194,15 @@
                     } else {
                         tx = await this.blindPackService.buyEliteBlindPack(num);
                     }
-                    // console.log(tx);
 
-                    this.notificationService.showProcessingNotification(tx.hash);
+                    this.notificationService.showProcessingNotification(tx.transactionHash);
 
-                    // wait for tx to be mined
-                    await tx.wait(1);
-
-                    const txRes = await this.cardsApiService.loadTokensForTx(tx.hash);
+                    const txRes = await this.cardsApiService.loadTokensForTx(tx.transactionHash);
                     this.cards = txRes.cards;
 
                     this.buyState = 'confirmed';
 
-                    this.notificationService.showConfirmedNotification(tx.hash);
+                    this.notificationService.showConfirmedNotification(tx.transactionHash);
 
                     // Refresh credit limit
                     this.loadCreditsForAccount();
