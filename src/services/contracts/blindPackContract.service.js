@@ -26,7 +26,7 @@ export default class BlindPackContractService {
             : totalPrice;
 
         // broadcast transaction
-        const {txPromise} = await this.contract.methods.buyBatch(number).send({
+        const txPromise = this.contract.methods.buyBatch(number).send({
             from: this.ethAccount,
             value: price.toString(),
         });
@@ -42,7 +42,7 @@ export default class BlindPackContractService {
         const totalPrice = await this.eliteContract.methods.totalPrice(number).call();
 
         // broadcast transaction
-        const {txPromise} = await this.eliteContract.methods.buyBatch(number).send({
+        const txPromise = this.eliteContract.methods.buyBatch(number).send({
             from: this.ethAccount,
             value: totalPrice,
         });
