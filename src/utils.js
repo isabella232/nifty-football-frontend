@@ -7,7 +7,7 @@ const API_CONFIG = {
   live: 'https://niftyfootball.cards/api'
 }
 
-const live = true
+const live = false
 
 // if live use mainnet, otherwise use rinkeby
 const DEV_NETWORK_ID = 4;
