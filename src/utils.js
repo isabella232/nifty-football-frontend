@@ -10,45 +10,41 @@ const API_CONFIG = {
 const live = true
 
 // if live use mainnet, otherwise use rinkeby
-const DEV_NETWORK_ID = 4
-// const PROD_NETWORK_ID = 1
-const NETWORK_ID = DEV_NETWORK_ID
+const DEV_NETWORK_ID = 4;
+const PROD_NETWORK_ID = 1;
+const NETWORK_ID = live ? PROD_NETWORK_ID : DEV_NETWORK_ID;
 
-const getApi = () => (live ? API_CONFIG.live : API_CONFIG.local)
+const getApi = () => live ? API_CONFIG.live : API_CONFIG.local;
 
-const AXIOS_CONFIG = { headers: { 'Access-Control-Allow-Origin': '*' } }
+const AXIOS_CONFIG = {headers: {'Access-Control-Allow-Origin': '*'}};
 
-const lookupEtherscanAddress = id => {
-  switch (id) {
-    case 1:
-      return 'https://etherscan.io'
-    case 3:
-      return 'https://ropsten.etherscan.io'
-    case 4:
-      return 'https://rinkeby.etherscan.io'
-    case 42:
-      return 'https://kovan.etherscan.io'
-    default:
-      return 'https://etherscan.io'
-  }
-}
+const lookupEtherscanAddress = (id) => {
+    switch (id) {
+        case 1:
+            return 'https://etherscan.io';
+        case 3:
+            return 'https://ropsten.etherscan.io';
+        case 4:
+            return 'https://rinkeby.etherscan.io';
+        case 42:
+            return 'https://kovan.etherscan.io';
+        default:
+            return 'https://etherscan.io';
+    }
+};
 
-const dotDotDotAccount = ethAccount => {
-  if (ethAccount && ethAccount.startsWith(`0x`)) {
-    return (
-      ethAccount.substr(0, 6) +
-      '...' +
-      ethAccount.substr(ethAccount.length - 6, ethAccount.length)
-    )
-  }
-  return ethAccount
-}
+const dotDotDotAccount = (ethAccount) => {
+    if (ethAccount && ethAccount.startsWith(`0x`)) {
+        return ethAccount.substr(0, 6) + '...' + ethAccount.substr(ethAccount.length - 6, ethAccount.length);
+    }
+    return ethAccount;
+};
 
-const waitForMillis = duration => {
-  return new Promise(resolve => {
-    setTimeout(() => resolve(), duration)
-  })
-}
+const waitForMillis = (duration) => {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(), duration);
+    });
+};
 
 export {
   getApi,
